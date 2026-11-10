@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>时笺 · 桌面日程</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body data-collapsed="false">
+  <svg class="symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-grip" viewBox="0 0 24 24"><path d="M9 5h.01M15 5h.01M9 12h.01M15 12h.01M9 19h.01M15 19h.01" stroke-width="3"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="m8 3 8 0-1 7 3 3v2H6v-2l3-3-1-7Zm4 12v6"/></symbol>
+    <symbol id="i-fold" viewBox="0 0 24 24"><path d="M5 5h14v14H5zM10 5v14m3-10 3 3-3 3"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24"><path d="m5 15 10.5-10.5a2.3 2.3 0 0 1 3.3 3.3L8.3 18.3 4 20l1-5Zm9-9 3.3 3.3"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.4"/><path d="M12 7v5l3.5 2"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.5M4 12h.5M4 18h.5"/></symbol>
+    <symbol id="i-history" viewBox="0 0 24 24"><path d="M4 11a8.2 8.2 0 1 1 3 7M3.5 6.5V12H9m3-5v5l3 2"/></symbol>
+    <symbol id="i-prev" viewBox="0 0 24 24"><path d="m14 6-6 6 6 6"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><path d="m10 6 6 6-6 6"/></symbol>
+    <symbol id="i-expand" viewBox="0 0 24 24"><path d="m14 5 5 0v5M19 5l-6 6M5 14v5h5"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 10v7m4-7v7"/></symbol>
+  </svg>
+
+  <div id="compact" aria-label="折叠的时笺">
+    <div class="compact-bar">
+      <span class="compact-grip" aria-hidden="true" title="拖动浮窗">⠿</span>
+      <button id="expand" type="button" aria-label="展开日程表" title="展开日程表">日程<svg class="icon small"><use href="#i-expand"/></svg></button>
+    </div>
+    <ul id="compact-titles" aria-label="待办事件"></ul>
+  </div>
+
+  <main id="widget">
+    <header class="titlebar">
+      <button id="new-task" type="button" class="corner-button" aria-label="新增事件" title="新增事件" aria-controls="editor" aria-expanded="false"><svg class="icon"><use href="#i-plus"/></svg></button>
+      <span class="drag-grip" aria-hidden="true" title="拖动浮窗"></span>
+      <div class="window-controls" role="group" aria-label="窗口操作">
+        <button class="icon-button" id="toggle-pin" aria-label="置顶" aria-pressed="false" title="置顶"><svg class="icon"><use href="#i-pin"/></svg></button>
+        <button class="icon-button" id="collapse" aria-label="折叠日程表" title="折叠日程表"><svg class="icon"><use href="#i-fold"/></svg></button>
+        <button class="icon-button" id="hide" aria-label="隐藏到托盘" title="隐藏到托盘"><svg class="icon"><use href="#i-x"/></svg></button>
+      </div>
+    </header>
+
+    <nav class="tabs" aria-label="视图">
+      <button id="tab-planner" type="button" aria-controls="plan-pane" aria-pressed="true"><svg class="icon"><use href="#i-list"/></svg>日程</button>
+      <button id="tab-journal" type="button" aria-controls="journal-pane" aria-pressed="false"><svg class="icon"><use href="#i-pen"/></svg>日结</button>
+      <button id="tab-history" type="button" aria-controls="history-pane" aria-pressed="false"><svg class="icon"><use href="#i-history"/></svg>历史</button>
+    </nav>
+    <p id="error" class="error" role="alert" hidden></p>
+    <div id="view-content">
+      <section id="plan-pane" aria-labelledby="plan-heading">
+        <div class="section-head"><h1 id="plan-heading">事件清单 <span id="task-count" class="counter">0</span> <small id="demo-tag" hidden>示例</small></h1>
+          <label class="filter"><span class="sr-only">筛选事件</span><select id="task-filter"><option value="all">全部事件</option><option value="open">未完成</option><option value="completed">已完成</option><option value="cancelled">已取消</option></select></label>
+        </div>
+        <div class="scroll-area" id="plan-scroll"><ul id="task-list" class="tasks"></ul><div id="plan-empty" class="empty" hidden><span class="empty-seal">笺</span><strong>还没有日程</strong><p>点左上角的「＋」添加第一件事。</p></div></div>
+      </section>
+      <section id="journal-pane" aria-label="日结记录" hidden>
+        <div class="history-head"><h1>当天记录 <span id="journal-count" class="counter">0</span></h1><div class="date-picker"><button class="icon-button" id="journal-prev" aria-label="前一天" title="前一天"><svg class="icon"><use href="#i-prev"/></svg></button><input id="journal-date" type="date" aria-label="日结日期"><button class="icon-button" id="journal-next" aria-label="后一天" title="后一天"><svg class="icon"><use href="#i-next"/></svg></button></div></div>
+        <div class="journal-caption"><span>记下每天的小步进展</span><button id="journal-today" type="button">回到今天</button></div>
+        <div class="scroll-area" id="journal-scroll"><ul id="journal-list"></ul><div id="journal-empty" class="empty" hidden><span class="empty-seal">记</span><strong>这一天还没有日结</strong><p>点「＋」记下做过的事，一小步也值得记录。</p></div></div>
+      </section>
+      <section id="history-pane" aria-label="每日历史" hidden>
+        <div class="history-head"><h1>每日记录</h1><div class="date-picker"><button class="icon-button" id="previous-day" title="上一个有记录的日期" aria-label="上一个有记录的日期"><svg class="icon"><use href="#i-prev"/></svg></button><input id="history-date" type="date" aria-label="历史日期"><button class="icon-button" id="next-day" title="下一个有记录的日期" aria-label="下一个有记录的日期"><svg class="icon"><use href="#i-next"/></svg></button></div></div>
+        <div class="scroll-area" id="history-scroll">
+          <div class="history-totals"><span>有效完成 <b id="day-completed-count">0</b></span><span>活动记录 <b id="day-activity-count">0</b></span></div>
+          <ul id="history-list" class="history-list"></ul><div id="history-empty" class="empty" hidden><span class="empty-seal">记</span><strong>当天没有记录</strong><p>可选择其他日期查看。</p></div>
+        </div>
+      </section>
+    </div>
+
+    <section id="editor" aria-labelledby="editor-heading" hidden>
+      <form id="journal-form" hidden>
+        <div class="editor-head"><h2 id="journal-editor-heading">新增日结</h2></div>
+        <label class="field-label" for="journal-entry-date">记录日期</label><input id="journal-entry-date" name="date" type="date" required>
+        <label class="field-label journal-content-label" for="journal-content">做了什么</label><textarea id="journal-content" name="content" rows="3" maxlength="1000" required placeholder="例如：读完论文方法部分，整理了三个问题"></textarea>
+        <fieldset class="effort-field"><legend>投入多少 <span class="optional">可不选</span></legend><div class="choices"><label><input type="radio" name="effort" value="" checked><span>不标记</span></label><label><input type="radio" name="effort" value="high"><span>多</span></label><label><input type="radio" name="effort" value="medium"><span>中</span></label><label><input type="radio" name="effort" value="low"><span>少</span></label></div></fieldset>
+        <p id="journal-form-error" class="error" role="alert" hidden></p>
+        <div id="journal-actions"><button type="button" id="journal-delete" class="delete" hidden><svg class="icon"><use href="#i-trash"/></svg>删除</button><button class="primary" id="journal-save" type="submit">保存日结</button></div>
+        <div id="journal-delete-confirm" hidden><p>删除这条日结记录？</p><div><button type="button" id="journal-keep">保留记录</button><button type="button" id="journal-confirm-delete">确认删除</button></div></div>
+      </form>
+      <form id="task-form">
+        <div class="editor-head"><div><span class="eyebrow">PLANNER ENTRY</span><h2 id="editor-heading">新增事件</h2></div></div>
+        <label class="field-label" for="task-title">事件标题</label>
+        <input id="task-title" name="title" type="text" maxlength="200" required placeholder="写下要做的事" autocomplete="off">
+        <div class="dimension-grid">
+          <fieldset><legend>重要程度</legend><div class="choices"><label><input type="radio" name="importance" value="high" checked><span>重</span></label><label><input type="radio" name="importance" value="low"><span>轻</span></label></div></fieldset>
+          <fieldset><legend>紧急程度</legend><div class="choices"><label><input type="radio" name="urgency" value="high"><span>急</span></label><label><input type="radio" name="urgency" value="low" checked><span>缓</span></label></div></fieldset>
+        </div>
+        <label class="field-label" for="task-due">截止时间</label>
+        <input type="datetime-local" id="task-due" name="due" step="1" required>
+        <p class="input-note" id="zone-note"></p>
+        <p id="form-error" class="error" role="alert" hidden></p>
+        <div id="editor-actions"><button type="button" id="delete-task" class="delete" hidden><svg class="icon"><use href="#i-trash"/></svg>删除</button><button class="primary" id="save-task" type="submit">保存事件</button></div>
+        <div id="delete-confirm" hidden><p>从清单移除此事件？历史记录会保留。</p><div><button type="button" id="keep-task">保留事件</button><button type="button" id="confirm-delete">确认删除</button></div></div>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

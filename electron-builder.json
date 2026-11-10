@@ -1,0 +1,28 @@
+{
+  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+  "appId": "local.shijian.planner",
+  "productName": "时笺",
+  "directories": {
+    "output": "release",
+    "buildResources": "build"
+  },
+  "electronDist": "node_modules/electron/dist",
+  "npmRebuild": false,
+  "files": [
+    "dist/src/**/*",
+    "!dist/src/**/*.map",
+    "!dist/src/**/*.d.ts",
+    "!dist/src/**/*.d.cts",
+    "package.json"
+  ],
+  "asarUnpack": ["node_modules/@koromix/koffi-win32-x64/**/*"],
+  "win": {
+    "target": [{ "target": "portable", "arch": ["x64"] }],
+    "icon": "build/icon.ico",
+    "artifactName": "时笺-${version}-Windows-${arch}.exe"
+  },
+  "portable": {
+    "requestExecutionLevel": "user",
+    "unpackDirName": false
+  }
+}

@@ -1,0 +1,9 @@
+node_modules/
+dist/
+release/
+data/
+/时笺.exe
+coverage/
+.npm-cache/
+.local/
+*.log
