@@ -1,6 +1,6 @@
 {
   "name": "desktop-planner-core",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "时笺 · Windows 桌面悬浮日程表",

@@ -1,6 +1,7 @@
 import type { ActivityKind, DailyHistory, HistoryDay, PriorityLevel, TaskView, UpdateTaskInput } from '../core/domain/model.js';
 import type { DesktopWindowState } from '../desktop/api.js';
 import Sortable from './vendor/sortable.js';
+import { initTimerView } from './timer-view.js';
 import type { DailyEntry, DailyEntryInput, Effort } from '../core/domain/model.js';
 
 const api = window.planner;
@@ -15,7 +16,8 @@ const titleInput = byId<HTMLInputElement>('task-title');
 const filter = byId<HTMLSelectElement>('task-filter');
 const localZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 const clockFormat = new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
-let pane: 'planner' | 'journal' | 'history' = 'planner';
+let pane: 'planner' | 'journal' | 'timer' | 'history' = 'planner';
+const updateTimer = initTimerView(change);
 let windowInfo: DesktopWindowState | undefined;
 let tasks: TaskView[] = [];
 let historyDays: HistoryDay[] = [];
@@ -173,6 +175,7 @@ function formatLocalInput(instant: Date): string {
 function drawWindow(state: DesktopWindowState): void {
   windowInfo = state;
   document.body.dataset.collapsed = String(state.collapsed);
+  updateTimer(state.countdown, pane === 'timer' && !state.collapsed);
   byId('demo-tag').hidden = !state.demo;
   const pin = button('toggle-pin');
   pin.setAttribute('aria-pressed', String(state.pinned));
@@ -331,7 +334,7 @@ async function refresh(): Promise<void> {
       const entries = await api.journalList(journalDay);
       if (token !== generation || busy) return;
       drawJournal(entries);
-    } else {
+    } else if (pane === 'history') {
       selectedDay ||= state.today;
       const [days, history] = await Promise.all([api.days(), api.day(selectedDay)]);
       if (token !== generation) return;
@@ -367,12 +370,15 @@ function switchPane(next: typeof pane): void {
   if (sorting) return;
   if (!editor.hidden) closeEditor();
   pane = next;
+  document.body.dataset.pane = next;
   const plan = next === 'planner';
   byId('plan-pane').hidden = !plan;
   byId('journal-pane').hidden = next !== 'journal';
+  byId('timer-pane').hidden = next !== 'timer';
   byId('history-pane').hidden = next !== 'history';
   button('tab-planner').setAttribute('aria-pressed', String(plan));
   button('tab-journal').setAttribute('aria-pressed', String(next === 'journal'));
+  button('tab-timer').setAttribute('aria-pressed', String(next === 'timer'));
   button('tab-history').setAttribute('aria-pressed', String(next === 'history'));
   if (next === 'journal') journalDay ||= windowInfo?.today ?? formatLocalInput(new Date()).slice(0, 10);
   setEditorVisible(false);
@@ -479,6 +485,7 @@ form.addEventListener('submit', (event) => {
 
 button('tab-planner').addEventListener('click', () => { if (!busy) switchPane('planner'); });
 button('tab-journal').addEventListener('click', () => { if (!busy) switchPane('journal'); });
+button('tab-timer').addEventListener('click', () => { if (!busy) switchPane('timer'); });
 button('tab-history').addEventListener('click', () => { if (!busy) switchPane('history'); });
 filter.addEventListener('change', () => { if (windowInfo && !sorting) drawPlan(windowInfo.today); });
 dateInput.addEventListener('change', () => selectDay(dateInput.value));

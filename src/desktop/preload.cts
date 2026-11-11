@@ -9,6 +9,10 @@ async function invoke<T>(command: string, ...args: unknown[]): Promise<T> {
 }
 
 const api: DesktopApi = {
+  startTimer: (seconds) => invoke('startTimer', seconds),
+  pauseTimer: () => invoke('pauseTimer'),
+  resumeTimer: () => invoke('resumeTimer'),
+  resetTimer: () => invoke('resetTimer'),
   journalList: (date) => invoke('journalList', date),
   journalCreate: (input) => invoke('journalCreate', input),
   journalUpdate: (id, input, revision) => invoke('journalUpdate', id, input, revision),

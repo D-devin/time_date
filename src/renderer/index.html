@@ -48,6 +48,7 @@
     <nav class="tabs" aria-label="视图">
       <button id="tab-planner" type="button" aria-controls="plan-pane" aria-pressed="true"><svg class="icon"><use href="#i-list"/></svg>日程</button>
       <button id="tab-journal" type="button" aria-controls="journal-pane" aria-pressed="false"><svg class="icon"><use href="#i-pen"/></svg>日结</button>
+      <button id="tab-timer" type="button" aria-controls="timer-pane" aria-pressed="false"><svg class="icon"><use href="#i-clock"/></svg>定时</button>
       <button id="tab-history" type="button" aria-controls="history-pane" aria-pressed="false"><svg class="icon"><use href="#i-history"/></svg>历史</button>
     </nav>
     <p id="error" class="error" role="alert" hidden></p>
@@ -62,6 +63,23 @@
         <div class="history-head"><h1>当天记录 <span id="journal-count" class="counter">0</span></h1><div class="date-picker"><button class="icon-button" id="journal-prev" aria-label="前一天" title="前一天"><svg class="icon"><use href="#i-prev"/></svg></button><input id="journal-date" type="date" aria-label="日结日期"><button class="icon-button" id="journal-next" aria-label="后一天" title="后一天"><svg class="icon"><use href="#i-next"/></svg></button></div></div>
         <div class="journal-caption"><span>记下每天的小步进展</span><button id="journal-today" type="button">回到今天</button></div>
         <div class="scroll-area" id="journal-scroll"><ul id="journal-list"></ul><div id="journal-empty" class="empty" hidden><span class="empty-seal">记</span><strong>这一天还没有日结</strong><p>点「＋」记下做过的事，一小步也值得记录。</p></div></div>
+      </section>
+      <section id="timer-pane" aria-label="定时" hidden>
+        <div class="timer-face">
+          <div class="timer-heading"><h1>倒计时</h1><span id="timer-status" role="status">待开始</span></div>
+          <output id="timer-display" role="timer" aria-label="剩余时间">00:05:00</output>
+          <progress id="timer-progress" max="1" value="1" aria-label="剩余时长比例"></progress>
+        </div>
+        <form id="timer-form">
+          <fieldset id="timer-length"><legend>设定时长</legend>
+            <div class="timer-inputs">
+              <label><input id="timer-hours" type="number" min="0" max="99" step="1" value="0">小时</label>
+              <label><input id="timer-minutes" type="number" min="0" max="59" step="1" value="5">分</label>
+              <label><input id="timer-seconds" type="number" min="0" max="59" step="1" value="0">秒</label>
+            </div>
+          </fieldset>
+          <div class="timer-actions"><button type="button" id="timer-reset" disabled>重置</button><button type="submit" id="timer-action" class="primary">开始</button></div>
+        </form>
       </section>
       <section id="history-pane" aria-label="每日历史" hidden>
         <div class="history-head"><h1>每日记录</h1><div class="date-picker"><button class="icon-button" id="previous-day" title="上一个有记录的日期" aria-label="上一个有记录的日期"><svg class="icon"><use href="#i-prev"/></svg></button><input id="history-date" type="date" aria-label="历史日期"><button class="icon-button" id="next-day" title="下一个有记录的日期" aria-label="下一个有记录的日期"><svg class="icon"><use href="#i-next"/></svg></button></div></div>

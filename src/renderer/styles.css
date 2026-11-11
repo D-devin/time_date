@@ -47,11 +47,29 @@ button, .choices span { transition: background-color .15s, color .15s; }
 .icon-button .icon { width: 15px; height: 15px; }
 .icon-button:hover:not(:disabled), .edit-button:focus-visible { color: var(--ink); background: rgb(116 160 126 / 27%); }
 #toggle-pin[aria-pressed="true"] { color: #174b34; background: rgb(99 151 108 / 30%); }
-.tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; padding: 3px; margin: 4px 10px 10px; flex: none; border: 1px solid var(--line); border-radius: 11px; background: rgb(236 249 237 / 40%); }
+.tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; padding: 3px; margin: 4px 10px 10px; flex: none; border: 1px solid var(--line); border-radius: 11px; background: rgb(236 249 237 / 40%); }
 .tabs button { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 33px; padding: 2px 6px; background: transparent; border: 1px solid transparent; border-radius: 7px; color: var(--muted); font-size: 13px; }
 .tabs button:hover { background: rgb(229 246 231 / 70%); }
 .tabs button[aria-pressed="true"] { color: #f2fbee; background: rgb(35 84 63 / 95%); border-color: rgb(29 72 52 / 65%); box-shadow: inset 0 1px rgb(255 255 255 / 15%); font-weight: 700; }
 .tabs .icon { width: 15px; height: 15px; }
+
+body[data-pane="timer"] #new-task { visibility: hidden; }
+#timer-pane { padding: 12px 20px 16px; overflow-y: auto; }
+.timer-face { padding: 6px 0 20px; }
+.timer-heading { display: flex; justify-content: space-between; align-items: center; }
+#timer-status { color: var(--muted); font-size: 12px; }
+#timer-display { display: block; text-align: center; font: 550 48px/1.35 "Segoe UI", sans-serif; font-variant-numeric: tabular-nums; margin: 19px 0 13px; }
+#timer-progress { display: block; appearance: none; width: 100%; height: 4px; border: 0; border-radius: 2px; overflow: hidden; }
+#timer-progress::-webkit-progress-bar { background: #c5dbcd; }
+#timer-progress::-webkit-progress-value { background: var(--forest); }
+#timer-form { padding-top: 8px; }
+.timer-inputs { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
+.timer-inputs label { display: flex; align-items: center; padding: 6px 8px; gap: 3px; background: var(--control); border: 1px solid var(--line); border-radius: 6px; white-space: nowrap; font-size: 12px; }
+.timer-inputs input { width: 100%; min-width: 0; padding: 2px; border: 0; background: transparent; font: 600 17px "Segoe UI", sans-serif; }
+.timer-actions { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-top: 19px; }
+#timer-reset { border: 1px solid var(--line); border-radius: 7px; background: var(--control); }
+.timer-reminder { background: #e6f2e9; }
+#dismiss-reminder { width: 100%; height: 100%; border: 1px solid var(--line); background: transparent; color: var(--forest); font: 650 25px var(--serif); }
 
 .task-meta, .task-meta time, .tag, .section-head, .history-head, .date-picker, .primary, .delete { display: flex; align-items: center; }
 #demo-tag { padding: 1px 5px; border: 1px solid var(--line); border-radius: 5px; font-size: 10px; font-weight: 500; color: var(--muted); vertical-align: 1px; }

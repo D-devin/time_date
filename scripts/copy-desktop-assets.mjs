@@ -1,6 +1,6 @@
 import { copyFile, mkdir } from 'node:fs/promises';
 
-for (const file of ['renderer/index.html', 'renderer/styles.css', 'desktop/tray.png']) {
+for (const file of ['renderer/index.html', 'renderer/reminder.html', 'renderer/styles.css', 'desktop/tray.png']) {
   const source = new URL('../src/' + file, import.meta.url);
   const target = new URL('../dist/src/' + file, import.meta.url);
   await mkdir(new URL('.', target), { recursive: true });

@@ -1,8 +1,10 @@
 import type {
   CreateTaskInput, UpdateTaskInput, TaskView, HistoryDay, DailyHistory, DailyEntry, DailyEntryInput,
 } from '../core/domain/model.js';
+import type { CountdownState } from './countdown.js';
 
 export interface DesktopWindowState {
+  countdown: CountdownState;
   collapsed: boolean;
   pinned: boolean;
   demo: boolean;
@@ -12,6 +14,10 @@ export interface DesktopWindowState {
 
 /** 渲染层可访问的完整接口。业务修改携带用户看到的事件版本。 */
 export interface DesktopApi {
+  startTimer(seconds: number): Promise<void>;
+  pauseTimer(): Promise<void>;
+  resumeTimer(): Promise<void>;
+  resetTimer(): Promise<void>;
   journalList(date: string): Promise<DailyEntry[]>;
   journalCreate(input: DailyEntryInput): Promise<DailyEntry>;
   journalUpdate(id: string, input: DailyEntryInput, revision: number): Promise<DailyEntry>;

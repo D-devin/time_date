@@ -8,6 +8,7 @@ import type { TaskView } from '../index.js';
 import type { DesktopApi, DesktopWindowState } from './api.js';
 import { seedDemo } from './demo-data.js';
 import { createGlassSwitch } from './window-glass.js';
+import { Countdown } from './countdown.js';
 import { DailyJournalService } from '../core/application/daily-journal-service.js';
 
 const demo = process.argv.includes('--demo');
@@ -118,6 +119,27 @@ async function start(): Promise<void> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   let lastTime = Date.now();
   let lastDay = toLocalDate(new Date(lastTime), timeZone);
+  let reminder: BrowserWindow | undefined;
+  const countdown = new Countdown(() => {
+    if (quitting) return;
+    const area = screen.getDisplayMatching(win.getBounds()).workArea;
+    const width = 236;
+    const height = 104;
+    const popup = new BrowserWindow({
+      width, height, x: area.x + Math.round((area.width - width) / 2), y: area.y + Math.round((area.height - height) / 2),
+      frame: false, resizable: false, show: false, skipTaskbar: true, backgroundColor: '#e6f2e9',
+      webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false },
+    });
+    reminder = popup;
+    popup.setAlwaysOnTop(true, 'screen-saver');
+    popup.webContents.setAudioMuted(true);
+    popup.once('ready-to-show', () => { if (!quitting && !popup.isDestroyed()) popup.showInactive(); });
+    popup.on('closed', () => { if (reminder === popup) reminder = undefined; });
+    void popup.loadFile(join(import.meta.dirname, '../renderer/reminder.html')).catch((error: unknown) => {
+      if (!popup.isDestroyed()) { popup.destroy(); console.error(error); }
+    });
+    notify();
+  });
 
   function notify(): void {
     if (!quitting && !win.isDestroyed() && !win.webContents.isDestroyed()) {
@@ -129,6 +151,7 @@ async function start(): Promise<void> {
   function refresh(force: boolean): void {
     clearTimeout(timer);
     if (quitting) return;
+    countdown.checkTime();
     const now = Date.now();
     const day = toLocalDate(new Date(now), timeZone);
     let changed = force || day !== lastDay;
@@ -153,7 +176,7 @@ async function start(): Promise<void> {
   }
 
   function state(): DesktopWindowState {
-    return { collapsed, pinned: win.isAlwaysOnTop(), demo, today: toLocalDate(new Date(), timeZone), timeZone };
+    return { collapsed, pinned: win.isAlwaysOnTop(), demo, today: toLocalDate(new Date(), timeZone), timeZone, countdown: countdown.snapshot() };
   }
   function resizeWidget(): void {
     const old = win.getBounds();
@@ -165,6 +188,10 @@ async function start(): Promise<void> {
     changeBounds(win, fit({ x, y: old.y, ...size }, workArea, false));
   }
   bindApi(win, {
+    startTimer: async (seconds) => { countdown.start(seconds); reminder?.close(); notify(); },
+    pauseTimer: async () => { countdown.pause(); notify(); },
+    resumeTimer: async () => { countdown.resume(); notify(); },
+    resetTimer: async () => { countdown.reset(); reminder?.close(); notify(); },
     journalList: (date) => journal.list(date),
     journalCreate: async (input) => { const entry = await journal.create(input); notify(); return entry; },
     journalUpdate: async (id, input, revision) => { const entry = await journal.update(id, input, revision); notify(); return entry; },
@@ -241,6 +268,8 @@ async function start(): Promise<void> {
   ]));
   tray.on('click', showWidget);
   dispose = () => {
+    countdown.reset();
+    reminder?.destroy();
     clearTimeout(timer);
     screen.off('display-metrics-changed', resizeWidget);
     screen.off('display-removed', resizeWidget);
